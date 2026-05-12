@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DevOps Lab - FullStack App</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial; max-width: 600px; margin: 50px auto; padding: 20px; }
+        input, button { padding: 8px; margin: 5px; }
+        .item { background: #f0f0f0; margin: 10px 0; padding: 10px; display: flex; justify-content: space-between; }
+        .delete { background: red; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>CI/CD Демо - Студент: [ВАШЕ_ИМЯ]</h1>
+    <h3>ID: [ВАШ_СТУДЕНЧЕСКИЙ_ID]</h3>
+
+    <div>
+        <input type="text" id="itemName" placeholder="Название записи">
+        <button onclick="addItem()">Добавить</button>
+    </div>
+
+    <h3>Список записей:</h3>
+    <div id="itemsList"></div>
+
+    <script>
+        // API_URL будет подставлен Railway автоматически
+        const API_URL = window.VITE_API_URL || 'http://localhost:5000';
+
+        async function loadItems() {
+            const response = await fetch(`${API_URL}/api/data`);
+            const items = await response.json();
+            const container = document.getElementById('itemsList');
+            container.innerHTML = '';
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.innerHTML = `
+                    <span>${item.name} (${new Date(item.created_at).toLocaleString()})</span>
+                    <button class="delete" onclick="deleteItem(${item.id})">Удалить</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        async function addItem() {
+            const name = document.getElementById('itemName').value;
+            if (!name) return;
+            await fetch(`${API_URL}/api/data`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name: name})
+            });
+            document.getElementById('itemName').value = '';
+            loadItems();
+        }
+
+        async function deleteItem(id) {
+            await fetch(`${API_URL}/api/data/${id}`, {method: 'DELETE'});
+            loadItems();
+        }
+
+        loadItems();
+    </script>
+</body>
+</html>
