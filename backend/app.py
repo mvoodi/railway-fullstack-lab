@@ -73,6 +73,17 @@ def delete_item(item_id):
     
     return jsonify({'message': 'Deleted'}), 200
 
+@app.route('/')
+def root():
+    return {
+        'message': 'API is running',
+        'endpoints': {
+            'GET /api/data': 'Get all items',
+            'POST /api/data': 'Add new item',
+            'DELETE /api/data/<id>': 'Delete item'
+        }
+    }
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
