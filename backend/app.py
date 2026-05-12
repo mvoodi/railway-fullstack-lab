@@ -4,33 +4,43 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # разрешаем запросы с фронтенда
+CORS(app)
 
-# Получаем URL базы данных из переменных окружения Railway
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 def get_db_connection():
+    if not DATABASE_URL:
+        return None 
     conn = psycopg2.connect(DATABASE_URL)
     return conn
 
-# Создаём таблицу при запуске, если её нет
 def init_db():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS items (
-            id SERIAL PRIMARY KEY,
-            name TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT NOW()
-        )
-    ''')
-    conn.commit()
-    cur.close()
-    conn.close()
+    """Создаёт таблицу, если БД доступна"""
+    if not DATABASE_URL:
+        print("⚠️ DATABASE_URL не задана, пропускаем инициализацию БД")
+        return
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS items (
+                id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        ''')
+        conn.commit()
+        cur.close()
+        conn.close()
+        print("✅ Таблица создана/проверена")
+    except Exception as e:
+        print(f"⚠️ Ошибка подключения к БД: {e}")
 
-init_db()
+if DATABASE_URL:
+    init_db()
+else:
+    print("⚠️ DATABASE_URL не задана, БД не инициализирована")
 
-# Эндпоинт 1: GET /api/data — получить все записи
 @app.route('/api/data', methods=['GET'])
 def get_items():
     conn = get_db_connection()
@@ -43,7 +53,6 @@ def get_items():
     items = [{'id': row[0], 'name': row[1], 'created_at': row[2]} for row in rows]
     return jsonify(items)
 
-# Эндпоинт 2: POST /api/data — добавить новую запись
 @app.route('/api/data', methods=['POST'])
 def add_item():
     data = request.get_json()
@@ -61,7 +70,6 @@ def add_item():
     
     return jsonify({'id': new_id, 'name': name}), 201
 
-# Эндпоинт 3: DELETE /api/data/<id> — удалить запись
 @app.route('/api/data/<int:item_id>', methods=['DELETE'])
 def delete_item(item_id):
     conn = get_db_connection()
