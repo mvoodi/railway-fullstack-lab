@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>DevOps Lab - FullStack App</title>
+    <title>DevOps Lab</title>
     <meta charset="utf-8">
     <style>
         body { font-family: Arial; max-width: 600px; margin: 50px auto; padding: 20px; }
@@ -11,11 +11,12 @@
     </style>
 </head>
 <body>
-    <h1>CI/CD Демо - Студент: [ВАШЕ_ИМЯ]</h1>
-    <h3>ID: [ВАШ_СТУДЕНЧЕСКИЙ_ID]</h3>
+    <h1>CI/CD Лабораторная</h1>
+    <p><strong>Студент:</strong> [Александра</p>
+    <p><strong>ID:</strong> 220102021 </p>
 
     <div>
-        <input type="text" id="itemName" placeholder="Название записи">
+        <input type="text" id="itemName" placeholder="Название">
         <button onclick="addItem()">Добавить</button>
     </div>
 
@@ -23,8 +24,7 @@
     <div id="itemsList"></div>
 
     <script>
-        // API_URL будет подставлен Railway автоматически
-        const API_URL = window.VITE_API_URL || 'http://localhost:5000';
+        const API_URL = 'https://railway-fullstack-lab-production.up.railway.app/'; 
 
         async function loadItems() {
             const response = await fetch(`${API_URL}/api/data`);
@@ -35,7 +35,7 @@
                 const div = document.createElement('div');
                 div.className = 'item';
                 div.innerHTML = `
-                    <span>${item.name} (${new Date(item.created_at).toLocaleString()})</span>
+                    <span>${item.name}</span>
                     <button class="delete" onclick="deleteItem(${item.id})">Удалить</button>
                 `;
                 container.appendChild(div);
